@@ -190,6 +190,17 @@ function renderStandardNode(
     }
   }
 
+  // A node can declare the origin of a frame its page script will create
+  // (for example a map embed built from `data-frame-src`, since there is no
+  // iframe module). Only https origins are admitted, and only this page's
+  // frame-src is relaxed, matching how module-declared cspSources work.
+  const frameSrc = frameSrcOrigin(node.props?.htmlAttributes)
+  if (frameSrc) {
+    const existing = acc.cspSources.get('frame-src') ?? new Set<string>()
+    existing.add(frameSrc)
+    acc.cspSources.set('frame-src', existing)
+  }
+
   // base.body has no wrapper element — its classIds + inline styles go on
   // <body> in publishPage.
   if (node.moduleId === 'base.body') return output.html
@@ -320,4 +331,17 @@ export function renderNode(
   if (specialRenderer) return specialRenderer(node, config, acc, renderNode)
 
   return renderStandardNode(node, def, config, acc)
+}
+
+/** The https origin named by a node's `data-frame-src` attribute, or null. */
+function frameSrcOrigin(htmlAttributes: unknown): string | null {
+  if (!htmlAttributes || typeof htmlAttributes !== 'object') return null
+  const value = (htmlAttributes as Record<string, unknown>)['data-frame-src']
+  if (typeof value !== 'string') return null
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' ? url.origin : null
+  } catch {
+    return null
+  }
 }
