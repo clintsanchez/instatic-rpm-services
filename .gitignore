@@ -83,3 +83,6 @@ docs/superpowers/
 .factory/
 .trae/
 .windsurf/
+
+# RPM Services local backups (./rpm-services.sh backup)
+/backups/

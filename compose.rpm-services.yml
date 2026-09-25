@@ -1,0 +1,36 @@
+# compose.rpm-services.yml
+# RPM Services trial instance of Instatic, built from this fork, running on SQLite.
+# Use the wrapper rather than calling compose by hand:
+#
+#   ./rpm-services.sh up      start (builds the image the first time)
+#   ./rpm-services.sh build   rebuild from source after changing the fork
+#
+# Built natively for arm64. The published GHCR image is amd64-only, and its Bun
+# segfaults under Rosetta on Apple Silicon, so it is not an option here.
+#
+# BUILD_COMMAND skips the `tsc -b` type-check: the default 2 GB Docker Desktop
+# VM runs out of memory on it. Type-check on the host, or raise Docker memory
+# and remove the arg, if you need it in the image build.
+#
+# Data lives in two named volumes (rpm-services_data, rpm-services_uploads),
+# not inside the container, so `docker rm` does not lose the site. The database
+# runs in WAL mode; `./rpm-services.sh backup` checkpoints before copying.
+
+name: rpm-services
+
+services:
+  app:
+    container_name: rpm-services
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_COMMAND: bun run scripts/vite.ts build
+    image: instatic:rpm-services
+    ports: !override
+      - "${HOST_PORT:-3031}:3001"
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:3031}
+    labels:
+      com.blaksheep.client: "RPM Services"
+      com.blaksheep.purpose: "Instatic builder trial"

@@ -12,7 +12,10 @@ COPY package.json bun.lock ./
 COPY vendor ./vendor
 RUN bun install --frozen-lockfile
 COPY . .
-RUN bun run build
+# Override to skip the `tsc -b` type-check on memory-constrained Docker hosts
+# (a 2 GB Docker Desktop VM runs out of memory): "bun run scripts/vite.ts build"
+ARG BUILD_COMMAND="bun run build"
+RUN ${BUILD_COMMAND}
 
 FROM oven/bun:${BUN_VERSION} AS production-deps
 WORKDIR /app
