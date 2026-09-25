@@ -454,6 +454,12 @@ export function createCrudActions({ get, mutateSite }: SiteSliceHelpers): CrudAc
           if (typeof rule.order === 'number' && rule.order > maxOrder) maxOrder = rule.order
         }
 
+        const existingClassNames = new Set(
+          Object.values(site.styleRules)
+            .filter((rule) => rule.kind === 'class')
+            .map((rule) => rule.name),
+        )
+
         const now = Date.now()
         for (const item of incoming) {
           const targets = targetBySelector.get(item.selector) ?? []
@@ -472,9 +478,21 @@ export function createCrudActions({ get, mutateSite }: SiteSliceHelpers): CrudAc
             continue
           }
 
+          // A non-bare selector for a class that already exists (`html .foo`,
+          // `.foo::before`) is a variant of that class, not a second copy of
+          // it. The parser only demotes such variants to ambient when the bare
+          // `.foo` rule is in the same CSS source, so a standalone apply would
+          // otherwise store a duplicate class rule no node is assigned to, and
+          // publish tree-shaking would drop it.
+          const source = item.source.kind === 'class'
+            && item.selector !== classKindSelector(item.source.name)
+            && existingClassNames.has(item.source.name)
+            ? { ...item.source, kind: 'ambient' as const, name: item.selector }
+            : item.source
+
           const id = nanoid()
           const newRule: StyleRule = {
-            ...item.source,
+            ...source,
             ...item.payload,
             id,
             order: (maxOrder += 1),
