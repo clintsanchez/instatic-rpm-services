@@ -197,7 +197,9 @@ export function runSetTypeScale(rawInput: unknown): AiToolOutput {
     action = 'created'
   }
 
+  if (input.preferences) store.updateFrameworkPreferences(input.preferences)
   store.updateFrameworkTypographyGroup(groupId, {
+    ...scaleModePatch(input),
     ...(input.namingConvention !== undefined
       ? { namingConvention: input.namingConvention }
       : action === 'created' && groupAlias
@@ -222,7 +224,10 @@ export function runSetTypeScale(rawInput: unknown): AiToolOutput {
     groupId,
     action,
     namingConvention,
-    generatedVars: generatedScaleVars(namingConvention, steps),
+    generatedVars:
+      group.mode === 'fluid_manual'
+        ? (group.manualSizes ?? []).map((size) => `var(--${size.name})`)
+        : generatedScaleVars(namingConvention, steps),
   })
 }
 
@@ -247,7 +252,9 @@ export function runSetSpacingScale(rawInput: unknown): AiToolOutput {
     action = 'created'
   }
 
+  if (input.preferences) store.updateFrameworkPreferences(input.preferences)
   store.updateFrameworkSpacingGroup(groupId, {
+    ...scaleModePatch(input),
     ...(input.namingConvention !== undefined
       ? { namingConvention: input.namingConvention }
       : action === 'created' && groupAlias
@@ -270,8 +277,34 @@ export function runSetSpacingScale(rawInput: unknown): AiToolOutput {
     groupId,
     action,
     namingConvention,
-    generatedVars: generatedScaleVars(namingConvention, steps),
+    generatedVars:
+      group.mode === 'fluid_manual'
+        ? (group.manualSizes ?? []).map((size) => `var(--${size.name})`)
+        : generatedScaleVars(namingConvention, steps),
   })
+}
+
+/**
+ * Manual-mode fields shared by the type and spacing runners. Manual entries are
+ * keyed by name, so re-running with the same names patches them in place.
+ */
+function scaleModePatch(input: {
+  mode?: 'fluid' | 'fluid_manual'
+  manualSizes?: { name: string; min: number; max: number }[]
+}) {
+  return {
+    ...(input.mode !== undefined ? { mode: input.mode } : {}),
+    ...(input.manualSizes !== undefined
+      ? {
+          manualSizes: input.manualSizes.map((size) => ({
+            id: `manual-${size.name}`,
+            name: size.name,
+            min: size.min,
+            max: size.max,
+          })),
+        }
+      : {}),
+  }
 }
 
 function normalizeScaleGroupAlias(value: string, fallback: 'text' | 'space'): string | null {

@@ -378,7 +378,7 @@ const setTypeScaleTool: AiTool = {
   execution: 'browser',
   requiredCapabilities: SITE_STYLE_CAPS,
   description:
-    'Configure the TYPOGRAPHY scale — the fluid type ramp generating `--text-*` variables (default prefix "text"). A scale is a config: `min`/`max` give the base `fontSize` (px) and `scaleRatio` at the small/large screen anchors; `steps` is the comma-separated step list (e.g. "xs,s,m,l,xl,2xl,3xl,4xl") and `baseScaleIndex` picks which step equals the base size. Creates the group if none exists, else updates it. Only pass `groupId` when you have a real existing group id; use `namingConvention:"text"` for the prefix. Reference sizes as `var(--text-l)` rather than raw px.',
+    'Configure the TYPOGRAPHY scale — the fluid type ramp generating `--text-*` variables (default prefix "text"). A scale is a config: `min`/`max` give the base `fontSize` (px) and `scaleRatio` at the small/large screen anchors; `steps` is the comma-separated step list (e.g. "xs,s,m,l,xl,2xl,3xl,4xl") and `baseScaleIndex` picks which step equals the base size. Creates the group if none exists, else updates it. Only pass `groupId` when you have a real existing group id; use `namingConvention:"text"` for the prefix. Reference sizes as `var(--text-l)` rather than raw px. For hand-set sizes pass `mode:"fluid_manual"` with `manualSizes:[{name,min,max}]` — each becomes `var(--<name>)`, fluid from `min` px at `preferences.minScreenWidth` to `max` px at `preferences.maxScreenWidth` (min===max gives a fixed size). `preferences` is site-wide and also affects spacing; `isRem:false` emits px (the site does not set a 10px root, so rem output assumes one).',
   inputSchema: SetTypeScaleInputSchema,
 }
 
@@ -388,7 +388,7 @@ const setSpacingScaleTool: AiTool = {
   execution: 'browser',
   requiredCapabilities: SITE_STYLE_CAPS,
   description:
-    'Configure the SPACING scale — the fluid spacing ramp generating `--space-*` variables (default prefix "space"). Same shape as site_set_type_scale but `min`/`max` carry `size` (px) instead of `fontSize`; `steps` defaults to an 11-step scale and `baseScaleIndex` to 5 ("m"). Creates the group if none exists, else updates it. Only pass `groupId` when you have a real existing group id; use `namingConvention:"space"` for the prefix. Reference gaps/padding as `var(--space-l)` rather than raw px.',
+    'Configure the SPACING scale — the fluid spacing ramp generating `--space-*` variables (default prefix "space"). Same shape as site_set_type_scale but `min`/`max` carry `size` (px) instead of `fontSize`; `steps` defaults to an 11-step scale and `baseScaleIndex` to 5 ("m"). Creates the group if none exists, else updates it. Only pass `groupId` when you have a real existing group id; use `namingConvention:"space"` for the prefix. Reference gaps/padding as `var(--space-l)` rather than raw px. Accepts the same `mode`/`manualSizes`/`preferences` as site_set_type_scale.',
   inputSchema: SetSpacingScaleInputSchema,
 }
 

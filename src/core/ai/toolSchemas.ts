@@ -381,6 +381,29 @@ const ScaleBreakpointInputSchema = (sizeKey: 'fontSize' | 'size') =>
     scaleRatio: Type.Optional(Type.Union([Type.Number(), Type.String()])),
   })
 
+/**
+ * Manual-mode entries: each becomes `var(--<name>)`, fluid from `min` px at the
+ * framework's minScreenWidth to `max` px at its maxScreenWidth.
+ */
+const ScaleManualSizesInputSchema = Type.Array(
+  Type.Object({
+    name: Type.String({ minLength: 1 }),
+    min: Type.Number(),
+    max: Type.Number(),
+  }),
+  { minItems: 1 },
+)
+
+/** Site-wide framework preferences shared by every fluid scale. */
+const ScalePreferencesInputSchema = Type.Object({
+  minScreenWidth: Type.Optional(Type.Number({ minimum: 0 })),
+  maxScreenWidth: Type.Optional(Type.Number({ minimum: 1 })),
+  isRem: Type.Optional(Type.Boolean()),
+  rootFontSize: Type.Optional(Type.Number({ minimum: 1 })),
+})
+
+const ScaleModeInputSchema = Type.Union([Type.Literal('fluid'), Type.Literal('fluid_manual')])
+
 export const SetTypeScaleInputSchema = Type.Object({
   groupId: Type.Optional(Type.String({ minLength: 1 })),
   namingConvention: Type.Optional(Type.String({ minLength: 1 })),
@@ -388,6 +411,9 @@ export const SetTypeScaleInputSchema = Type.Object({
   baseScaleIndex: Type.Optional(Type.Integer({ minimum: 0 })),
   min: Type.Optional(ScaleBreakpointInputSchema('fontSize')),
   max: Type.Optional(ScaleBreakpointInputSchema('fontSize')),
+  mode: Type.Optional(ScaleModeInputSchema),
+  manualSizes: Type.Optional(ScaleManualSizesInputSchema),
+  preferences: Type.Optional(ScalePreferencesInputSchema),
 })
 
 export const SetSpacingScaleInputSchema = Type.Object({
@@ -397,6 +423,9 @@ export const SetSpacingScaleInputSchema = Type.Object({
   baseScaleIndex: Type.Optional(Type.Integer({ minimum: 0 })),
   min: Type.Optional(ScaleBreakpointInputSchema('size')),
   max: Type.Optional(ScaleBreakpointInputSchema('size')),
+  mode: Type.Optional(ScaleModeInputSchema),
+  manualSizes: Type.Optional(ScaleManualSizesInputSchema),
+  preferences: Type.Optional(ScalePreferencesInputSchema),
 })
 
 // ---------------------------------------------------------------------------

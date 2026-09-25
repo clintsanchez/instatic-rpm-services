@@ -11,7 +11,8 @@ compose() {
 
 case "${1:-}" in
   up)     compose up -d ;;
-  build)  compose up -d --build ;;
+  # Stop first: the Vite build does not fit in a 2 GB Docker VM beside the app.
+  build)  compose stop app; compose build && compose up -d ;;
   down)   compose down ;;
   logs)   compose logs -f app ;;
   ps)     compose ps ;;
